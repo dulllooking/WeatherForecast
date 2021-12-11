@@ -1,0 +1,288 @@
+﻿@using System.Globalization
+
+@model IEnumerable<WeatherForecast.Models.WeatherData>
+
+@{
+    Layout = null;
+    // 初始化 Controller 內 C# 我要的型別
+    DateTime dateNow = ViewBag.DateNow;
+    CultureInfo us = new CultureInfo("en-US");
+    CultureInfo tw = new CultureInfo("zh-TW");
+    string url = "https://www.cwb.gov.tw";
+}
+
+@ViewData["Demo"]
+@ViewBag.Demo2
+@TempData["Demo"]
+
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <title>未來1週天氣預報</title>
+    <!-- Meta -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <link rel="stylesheet" href="/css/alert.css">
+    <link rel="stylesheet" href="/css/jquery-ui.min.css">
+    <!--common_css_begin-->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/plugins.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--common_css_end-->
+    <link rel="stylesheet" href="/css/main-map.css">
+    <!-- =============== CSS Customization =============== -->
+    <link rel="stylesheet" href="/css/map.css" id="MapCSS">
+</head>
+<body class="townBody">
+    <div class="wrapper">
+        <main class="main-content">
+            <div class="row">
+                <div class="col-lg-12">
+                    <!-- [START] 快速地點搜尋 -->
+                    <h2>未來1週天氣預報</h2>
+                    <form name="form1" action="/V8/C/W/Town/Town.html">
+                        <fieldset>
+                            <legend class="sr-only">快速地點搜尋</legend>
+                            <div class="area_search-v9">
+                                <div class="area_search_item-v9">
+                                    <div class="countryselect-title">
+                                        <label class="label" for="CountySelect">地點切換</label>
+                                    </div>
+                                    <div class="col">
+                                        <div class="d-flex w-100">
+                                            <div class="w-50">
+                                                <label class="select w-100">
+                                                    <select id="CountySelect" class="form-control" aria-label="選擇縣市">
+                                                        <option value="" disabled selected>選擇縣市</option>
+                                                    </select><i aria-hidden="true"></i>
+                                                </label>
+                                            </div>
+                                            <div class="w-50">
+                                                <label class="select w-100" for="TID">
+                                                    <select name="TID" id="TID" class="form-control" aria-label="選擇鄉鎮">
+                                                        <option value="" disabled selected>選擇鄉鎮</option>
+                                                    </select><i aria-hidden="true"></i>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </form>
+                    <!--table-->
+                    <div accesskey="K" title="鄉鎮預報表格" id="div_table">
+                        <div id="PC_week">
+                            <div class="table-responsive report-table pc grid_open">
+                                <table class="table table-bordered" id="TableIdweeks">
+                                    <caption class="sr-only">一週天氣概況</caption>
+                                    <thead>
+                                        <tr>
+                                            <th id="PC7_D">日期</th>
+                                            @for (int i = 0; i < 7; i++) {
+                                                string weekStr = dateNow.AddDays(i).ToString("dddd", tw);
+                                                string dateStr = dateNow.AddDays(i).ToString("MM/dd");
+                                                int weekNum = Convert.ToInt32(dateNow.AddDays(i).DayOfWeek.ToString("d"));
+                                                if (weekNum == 0 || weekNum == 6) {
+                                                    <th id='PC7_D@(i+1)' headers='PC7_D' colspan='2' class='holiday'>@dateStr<br>@weekStr</th>
+                                                }
+                                                else {
+                                                    <th id='PC7_D@(i+1)' headers='PC7_D' colspan='2'>@dateStr<br>@weekStr</th>
+                                                }
+                                            }
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="time">
+                                            <th id="PC7_Ti">時間</th>
+                                            <th id="PC7_D1D" headers="PC7_Ti PC7_D1"><span>白天</span></th>
+                                            <th id="PC7_D1N" headers="PC7_Ti PC7_D1"><span>晚上</span></th>
+                                            <th id="PC7_D2D" headers="PC7_Ti PC7_D2"><span>白天</span></th>
+                                            <th id="PC7_D2N" headers="PC7_Ti PC7_D2"><span>晚上</span></th>
+                                            <th id="PC7_D3D" headers="PC7_Ti PC7_D3"><span>白天</span></th>
+                                            <th id="PC7_D3N" headers="PC7_Ti PC7_D3"><span>晚上</span></th>
+                                            <th id="PC7_D4D" headers="PC7_Ti PC7_D4"><span>白天</span></th>
+                                            <th id="PC7_D4N" headers="PC7_Ti PC7_D4"><span>晚上</span></th>
+                                            <th id="PC7_D5D" headers="PC7_Ti PC7_D5"><span>白天</span></th>
+                                            <th id="PC7_D5N" headers="PC7_Ti PC7_D5"><span>晚上</span></th>
+                                            <th id="PC7_D6D" headers="PC7_Ti PC7_D6"><span>白天</span></th>
+                                            <th id="PC7_D6N" headers="PC7_Ti PC7_D6"><span>晚上</span></th>
+                                            <th id="PC7_D7D" headers="PC7_Ti PC7_D7"><span>白天</span></th>
+                                            <th id="PC7_D7N" headers="PC7_Ti PC7_D7"><span>晚上</span></th>
+                                        </tr>
+                                        <tr>
+                                            <th id="PC7_Wx">天氣狀況</th>
+                                            @foreach (var data in Model) {
+                                                int day = Convert.ToInt16(Math.Ceiling((float)data.Id / 2));
+                                                if (data.Id % 2 > 0) {
+                                                    <td headers="PC7_Wx PC7_D@(day) PC7_D@(day)D"><img src="@url/V8/assets/img/weather_icons/weathers/svg_icon/day/@(data.WeatherImage).svg" alt="@data.WeatherText" title="@data.WeatherText"></td>
+                                                }
+                                                else {
+                                                    <td headers="PC7_Wx PC7_D@(day) PC7_D@(day)N"><img src="@url/V8/assets/img/weather_icons/weathers/svg_icon/night/@(data.WeatherImage).svg" alt="@data.WeatherText" title="@data.WeatherText"></td>
+                                                }
+                                            }
+                                        </tr>
+                                        <tr>
+                                            <th id="PC7_MaxT">最高溫</th>
+                                            @foreach (var data in Model) {
+                                                int day = Convert.ToInt16(Math.Ceiling((float)data.Id / 2));
+                                                int temF = (int)Math.Round((float)data.MaxTemperature * 9 / 5 + 32);
+                                                if (data.Id % 2 > 0) {
+                                                    <td headers="PC7_MaxT PC7_D@(day) PC7_D@(day)D"><span class="tem-C is-active">@data.MaxTemperature</span><span class="tem-F is-hidden">@temF</span></td>
+                                                }
+                                                else {
+                                                    <td headers="PC7_MaxT PC7_D@(day) PC7_D@(day)N"><span class="tem-C is-active">@data.MaxTemperature</span><span class="tem-F is-hidden">@temF</span></td>
+                                                }
+                                            }
+                                        </tr>
+                                        <tr>
+                                            <th id="PC7_MinT">最低溫</th>
+                                            @foreach (var data in Model) {
+                                                int day = Convert.ToInt16(Math.Ceiling((float)data.Id / 2));
+                                                int temF = (int)Math.Round((float)data.MinTemperature * 9 / 5 + 32);
+                                                if (data.Id % 2 > 0) {
+                                                    <td headers="PC7_MinT PC7_D@(day) PC7_D@(day)D"><span class="tem-C is-active">@data.MinTemperature</span><span class="tem-F is-hidden">@temF</span></td>
+                                                }
+                                                else {
+                                                    <td headers="PC7_MinT PC7_D@(day) PC7_D@(day)N"><span class="tem-C is-active">@data.MinTemperature</span><span class="tem-F is-hidden">@temF</span></td>
+                                                }
+                                            }
+                                        </tr>
+                                        <tr>
+                                            <th id="PC7_Po">降雨機率</th>
+                                            @foreach (var data in Model) {
+                                                int day = Convert.ToInt16(Math.Ceiling((float)data.Id / 2));
+                                                string pop = data.ProbabilityOfPrecipitation12h >= 0 ? data.ProbabilityOfPrecipitation12h.ToString() + "%" : "-";
+                                                if (data.Id % 2 > 0) {
+                                                    <td headers="PC7_Po PC7_D@(day) PC7_D@(day)D">@pop</td>
+                                                }
+                                                else {
+                                                    <td headers="PC7_Po PC7_D@(day) PC7_D@(day)N">@pop</td>
+                                                }
+                                            }
+                                        </tr>
+                                        <tr>
+                                            <th id="PC7_MaxAT">體感最高溫</th>
+                                            @foreach (var data in Model) {
+                                                int day = Convert.ToInt16(Math.Ceiling((float)data.Id / 2));
+                                                int temF = (int)Math.Round((float)data.MaxApparentTemperature * 9 / 5 + 32);
+                                                if (data.Id % 2 > 0) {
+                                                    <td headers="PC7_MaxAT PC7_D@(day) PC7_D@(day)D"><span class="tem-C is-active">@data.MaxApparentTemperature</span><span class="tem-F is-hidden">@temF</span></td>
+                                                }
+                                                else {
+                                                    <td headers="PC7_MaxAT PC7_D@(day) PC7_D@(day)N"><span class="tem-C is-active">@data.MaxApparentTemperature</span><span class="tem-F is-hidden">@temF</span></td>
+                                                }
+                                            }
+                                        </tr>
+                                        <tr>
+                                            <th id="PC7_MinAT">體感最低溫</th>
+                                            @foreach (var data in Model) {
+                                                int day = Convert.ToInt16(Math.Ceiling((float)data.Id / 2));
+                                                int temF = (int)Math.Round((float)data.MinApparentTemperature * 9 / 5 + 32);
+                                                if (data.Id % 2 > 0) {
+                                                    <td headers="PC7_MinAT PC7_D@(day) PC7_D@(day)D"><span class="tem-C is-active">@data.MinApparentTemperature</span><span class="tem-F is-hidden">@temF</span></td>
+                                                }
+                                                else {
+                                                    <td headers="PC7_MinAT PC7_D@(day) PC7_D@(day)N"><span class="tem-C is-active">@data.MinApparentTemperature</span><span class="tem-F is-hidden">@temF</span></td>
+                                                }
+                                            }
+                                        </tr>
+                                        <tr>
+                                            <th id="PC7_RH">相對濕度</th>
+                                            @foreach (var data in Model) {
+                                                int day = Convert.ToInt16(Math.Ceiling((float)data.Id / 2));
+                                                if (data.Id % 2 > 0) {
+                                                    <td headers="PC7_RH PC7_D@(day) PC7_D@(day)D">@(data.AverageRelativeHumidity)%</td>
+                                                }
+                                                else {
+                                                    <td headers="PC7_RH PC7_D@(day) PC7_D@(day)N">@(data.AverageRelativeHumidity)%</td>
+                                                }
+                                            }
+                                        </tr>
+                                        <tr class="W-BF">
+                                            <th id="PC7_BF">蒲福風級</th>
+                                            @foreach (var data in Model) {
+                                                int day = Convert.ToInt16(Math.Ceiling((float)data.Id / 2));
+                                                if (data.Id % 2 > 0) {
+                                                    <td headers="PC7_BF PC7_D@(day) PC7_D@(day)D">@data.MaxBeaufortScale</td>
+                                                }
+                                                else {
+                                                    <td headers="PC7_BF PC7_D@(day) PC7_D@(day)N">@data.MaxBeaufortScale</td>
+                                                }
+                                            }
+                                        </tr>
+                                        <tr class="W-MS d-none">
+                                            <th id="PC7_MS">風速(m/s)</th>
+                                            @foreach (var data in Model) {
+                                                int day = Convert.ToInt16(Math.Ceiling((float)data.Id / 2));
+                                                if (data.Id % 2 > 0) {
+                                                    <td headers="PC7_MS PC7_D@(day) PC7_D@(day)D">@data.MaxWindSpeed</td>
+                                                }
+                                                else {
+                                                    <td headers="PC7_MS PC7_D@(day) PC7_D@(day)N">@data.MaxWindSpeed</td>
+                                                }
+                                            }
+                                        </tr>
+                                        <tr>
+                                            <th id="PC7_WD">風向</th>
+                                            @foreach (var data in Model) {
+                                                int day = Convert.ToInt16(Math.Ceiling((float)data.Id / 2));
+                                                if (data.Id % 2 > 0) {
+                                                    <td headers="PC7_WD PC7_D@(day) PC7_D@(day)D">@data.WindDirection</td>
+                                                }
+                                                else {
+                                                    <td headers="PC7_WD PC7_D@(day) PC7_D@(day)N">@data.WindDirection</td>
+                                                }
+                                            }
+                                        </tr>
+                                        <tr>
+                                            <th id="PC7_UVI">紫外線</th>
+                                            @foreach (var data in Model) {
+                                                int day = Convert.ToInt16(Math.Ceiling((float)data.Id / 2));
+                                                string uniStr = "11";
+                                                if (data.UVindex >= 8 && data.UVindex <= 10) {
+                                                    uniStr = "8-10";
+                                                }
+                                                else if (data.UVindex >= 6 && data.UVindex <= 7) {
+                                                    uniStr = "6-7";
+                                                }
+                                                else if (data.UVindex >= 3 && data.UVindex <= 5) {
+                                                    uniStr = "3-5";
+                                                }
+                                                else if (data.UVindex >= 0 && data.UVindex <= 2) {
+                                                    uniStr = "0-2";
+                                                }
+                                                if (data.Id % 2 > 0) {
+                                        <td headers="PC7_UVI PC7_D@(day) PC7_D@(day)D" colspan="2">
+                                            <i title="@data.UVindexText" class="icon-cwb-Ultraviolet-radiation2 uvi_@uniStr" aria-hidden="true"><span class="material-icons md-60">wb_sunny</span></i>
+                                            <strong>@data.UVindex</strong>
+                                            <span class="sr-only" style="width:auto">@data.UVindexText</span>
+                                        </td>
+                                                }
+                                            }
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!--end table-->
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>
+
+
+
+
